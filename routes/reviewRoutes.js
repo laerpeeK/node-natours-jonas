@@ -1,11 +1,11 @@
 const express = require('express')
 
-const router = express.Router({ mergeParams: true })
-
 const reviewController = require('./../controllers/reviewController')
 const authController = require('./../controllers/authController')
 
-// POST /tour/234fad4/reviews
+// api/v1/reviews & api/v1/tours/:tourId/reviews
+const router = express.Router({ mergeParams: true }) //从父路由导入params对象
+
 router.use(authController.protect)
 
 router

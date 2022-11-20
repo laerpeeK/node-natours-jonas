@@ -16,26 +16,28 @@ const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 const reviewRouter = require('./routes/reviewRoutes')
 const viewRouter = require('./routes/viewRoutes')
+const bookingRouter = require('./routes/bookingRoutes')
 
 const app = express()
 
+// 设置渲染模板引擎 -pug, 目录 -views
 app.set('view engine', 'pug')
 app.set('views', path.join(__dirname, 'views'))
 
-// Serving static files
+// 解析静态文件目录 -public
 // app.use(express.static(`${__dirname}/public`))
 app.use(express.static(path.join(__dirname, 'public')))
 
-// 1).Global MiddleWare
-// Set Security HTTP headers
+// 1).全局中间件
+// 设置安全的HTTP头部如X-Frame-Options防止劫持攻击;
 app.use(helmet())
 
-// Development logging
+// 设置开发时命令行日志
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
 
-// Limit request from same API
+// 限制同IP下API请求次数，每小时最多100次，超过提示信息
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
@@ -43,21 +45,30 @@ const limiter = rateLimit({
 })
 app.use('/api', limiter)
 
-// Body parser, reading data from body into req.body
+// 解析请求体，设置请求体内容最大长度，使req.body能够获取到JSON信息
 app.use(
   express.json({
     limit: '10KB'
   })
 )
+// 能够解析到req.file
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '10kb'
+  })
+)
+
+// 使req.cookies解析到具体cookies信息
 app.use(cookieParser())
 
-// Data sanitization against NoSQL query injection
+// 防止Mongodb注入攻击
 app.use(mongoSanitize())
 
-// Data sanitization against XSS
+// 防止XSS攻击
 app.use(xss())
 
-// Prevent parameter pollution
+// 设置查询字段白名单
 app.use(
   hpp({
     whitelist: [
@@ -71,31 +82,25 @@ app.use(
   })
 )
 
-// Test middleware
+// 获取请求发生时刻
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString()
   next()
 })
 
-// Routes
+// 设置路由匹配规则
 app.use('/api/v1/tours', tourRouter)
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1/reviews', reviewRouter)
+app.use('/api/v1/bookings', bookingRouter)
 app.use('/', viewRouter)
 
-// unhandle req.originalUrl handler
+// 匹配不到的路径处理方式
 app.all('*', (req, res, next) => {
-  // res.status(404).json({
-  //   status: 'fail',
-  //   message: `Can't find ${req.originalUrl} on this server!`
-  // })
-  // const err = new Error(`Can't find ${req.originalUrl} on this server!`)
-  // err.status = 'fail'
-  // err.statusCode = 404
-
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404))
 })
 
+// 错误处理
 app.use(globalErrorHandler)
 
 module.exports = app

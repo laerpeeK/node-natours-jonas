@@ -1,8 +1,7 @@
 const Review = require('./../models/reviewModel')
 
 //const catchAsync = require('./../utils/catchAsync')
-
-const factory = require('./handlerFactroy')
+const factory = require('../utils/handlerFactroy')
 
 // exports.getAllReviews = catchAsync(async (req, res, next) => {
 //   let filter = {}

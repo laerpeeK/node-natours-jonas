@@ -1,17 +1,21 @@
 const express = require('express')
 
-const router = express.Router()
 const reviewRouter = require('./../routes/reviewRoutes')
 
 const tourController = require('./../controllers/tourController')
 const authController = require('./../controllers/authController')
+
+// api/v1/tours
+const router = express.Router()
 
 router.use('/:tourId/reviews', reviewRouter)
 
 router
   .route('/top-5-cheap')
   .get(tourController.aliasTopTours, tourController.getAllTours)
+
 router.route('/tour-stats').get(tourController.getTourStats)
+
 router
   .route('/monthly-plan/:year')
   .get(
@@ -23,8 +27,6 @@ router
 router
   .route('/tours-within/:distance/center/:latlng/unit/:unit')
   .get(tourController.getToursWithin)
-// 1)/tours-distance?distance=233&center=-40,45&unit=mi
-// 2)/tours-within/233/center/-40,45/unit/mi
 
 router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances)
 
@@ -43,6 +45,8 @@ router
   .patch(
     authController.protect,
     authController.restrictTo('admin', 'lead-guide'),
+    tourController.uploadTourImages,
+    tourController.resizeTourImages,
     tourController.updateTour
   )
   .delete(

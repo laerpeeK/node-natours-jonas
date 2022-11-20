@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema({
     validate: [validator.isEmail, 'Please provide a valid email']
   },
   photo: {
-    type: String
+    type: String,
+    default: 'default.jpg'
   },
   role: {
     type: String,
@@ -56,18 +57,20 @@ const userSchema = new mongoose.Schema({
   }
 })
 
+// 只有密码被创建、修改会生效
 userSchema.pre('save', async function(next) {
-  // Only run this function if password was actually modified
+  // 只有密码修改才会触发 (Only run this function if password was actually modified)
   if (!this.isModified('password')) return next()
 
-  // Hash the password with cost of 12
+  // 增加12位盐值编码 (Hash the password with cost of 12)
   this.password = await bcrypt.hash(this.password, 12)
 
-  // Delete paaswordConfirm field
+  // 删除密码确认字段 (Delete paaswordConfirm field)
   this.passwordConfirm = undefined
   next()
 })
 
+// 只有密码被修改会生效
 userSchema.pre('save', function(next) {
   if (!this.isModified('password') || this.isNew) return next()
 
@@ -75,12 +78,14 @@ userSchema.pre('save', function(next) {
   next()
 })
 
+// 只返回active为false的信息
 userSchema.pre(/^find/, function(next) {
   // this points to current query
-  this.find({ active: { $ne: false } })
+  this.find({ active: { $ne: false } }) //this ---> collection
   next()
 })
 
+// 确保密码无误
 userSchema.methods.correctPassword = async function(
   candidatePassword,
   userPassword
@@ -88,6 +93,7 @@ userSchema.methods.correctPassword = async function(
   return await bcrypt.compare(candidatePassword, userPassword)
 }
 
+// 登录是否生效
 userSchema.methods.changePasswordAfter = function(JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
@@ -101,18 +107,20 @@ userSchema.methods.changePasswordAfter = function(JWTTimestamp) {
   return false
 }
 
+// 生成重置密码token
 userSchema.methods.createPasswordResetToken = function() {
   const resetToken = crypto.randomBytes(32).toString('hex')
-  this.passwordResetToken = crypto
+  this.passwordResetToken = crypto //this ---> doc
     .createHash('sha256')
     .update(resetToken)
     .digest('hex')
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000
 
-  console.log({ resetToken }, this.passwordResetToken)
+  // console.log({ resetToken }, this.passwordResetToken)
   return resetToken
 }
 
 const User = mongoose.model('User', userSchema)
+
 module.exports = User
