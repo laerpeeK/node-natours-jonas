@@ -3,11 +3,11 @@ const sharp = require('sharp')
 
 const Tour = require('./../models/tourModel')
 
-//const APIFeatures = require('./../utils/apiFeatures')
 const catchAsync = require('./../utils/catchAsync')
 const AppError = require('./../utils/appError')
 const factory = require('../utils/handlerFactroy')
 
+// 文件上传
 const multerStorage = multer.memoryStorage()
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image')) {
@@ -32,7 +32,7 @@ exports.resizeTourImages = catchAsync(async (req, res, next) => {
     return next()
   }
 
-  // 1) Cover image
+  // 1) 处理imageCover
   req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`
   await sharp(req.files.imageCover[0].buffer)
     .resize(2000, 1333)
@@ -40,7 +40,7 @@ exports.resizeTourImages = catchAsync(async (req, res, next) => {
     .jpeg({ quantity: 90 })
     .toFile(`public/img/tours/${req.body.imageCover}`)
 
-  // 2) Images
+  // 2) 处理Images
   req.body.images = []
   await Promise.all(
     req.files.images.map(async (file, i) => {
@@ -53,28 +53,18 @@ exports.resizeTourImages = catchAsync(async (req, res, next) => {
 
       req.body.images.push(filename)
     })
-  ).then(() => {
-    req.body.images.sort((a, b) => {
-      return a.split('-')[3] - b.split('-')[3]
+  )
+    .then(() => {
+      req.body.images.sort((a, b) => {
+        return a.split('-')[3] - b.split('-')[3]
+      })
     })
-  })
+    .catch(err => {
+      return next(new AppError(err.message), 404)
+    })
 
   next()
 })
-
-// const tours = JSON.parse(
-//   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
-// )
-
-// exports.checkBody = (req, res, next) => {
-//   if (!req.body.name || !req.body.price) {
-//     return res.status(400).json({
-//       status: 'fail',
-//       message: 'Missing name or price'
-//     })
-//   }
-//   next()
-// }
 
 // middleware
 exports.aliasTopTours = (req, res, next) => {
@@ -84,90 +74,11 @@ exports.aliasTopTours = (req, res, next) => {
   next()
 }
 
-// controller
-// exports.getAllTours = catchAsync(async (req, res, next) => {
-//   const features = new APIFeatures(Tour, req.query)
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .paginate()
-//   const tours = await features.query
-//   // 2.const tours = await Tour.find().where('duration').equals(5)
-//   // Send response
-//   res.status(200).json({
-//     status: 'success',
-//     // requestedAt: req.requestTime,
-//     results: tours.length,
-//     data: {
-//       tours: tours
-//     }
-//   })
-// })
-
-// exports.getTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findById(req.params.id).populate({
-//     path: 'reviews',
-//     select: '-__v'
-//   })
-
-//   if (!tour) {
-//     return next(new AppError('No tour found with that ID', 404))
-//   }
-//   //Tour.findOne({ _id: req.params.id })
-//   res.status(200).json({
-//     status: 'success',
-//     data: {
-//       tour: tour
-//     }
-//   })
-// })
-
-// exports.createTour = catchAsync(async (req, res, next) => {
-//   const newTour = await Tour.create(req.body)
-//   res.status(201).json({
-//     status: 'success',
-//     data: {
-//       tour: newTour
-//     }
-//   })
-// })
-
-// exports.updateTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-//     new: true,
-//     runValidators: true
-//   })
-
-//   if (!tour) {
-//     return next(new AppError('No tour found with that ID', 404))
-//   }
-
-//   res.status(200).json({
-//     stataus: 'success',
-//     data: {
-//       tour: tour
-//     }
-//   })
-// })
-
 exports.getAllTours = factory.getAll(Tour)
 exports.getTour = factory.getOne(Tour, { path: 'reviews', select: '-__v' })
 exports.createTour = factory.createOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
 exports.deleteTour = factory.deleteOne(Tour)
-
-// exports.deleteTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findByIdAndDelete(req.params.id)
-
-//   if (!tour) {
-//     return next(new AppError('No tour found with that ID', 404))
-//   }
-
-//   res.status(204).json({
-//     status: 'success',
-//     data: null
-//   })
-// })
 
 exports.getTourStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([

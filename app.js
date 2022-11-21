@@ -7,6 +7,7 @@ const mongoSanitize = require('express-mongo-sanitize')
 const xss = require('xss-clean')
 const hpp = require('hpp')
 const cookieParser = require('cookie-parser')
+const compression = require('compression')
 
 const AppError = require('./utils/appError')
 
@@ -81,6 +82,9 @@ app.use(
     ]
   })
 )
+
+// 压缩，only for text
+app.use(compression())
 
 // 获取请求发生时刻
 app.use((req, res, next) => {
