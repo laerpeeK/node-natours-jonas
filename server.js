@@ -34,6 +34,8 @@ mongoose
   .then(() => console.log('DB connection successful!'))
   .catch(err => {
     console.log('DB connect failed...')
+    console.log(DB)
+    console.log(err)
     console.log(err.name, err.message)
     process.exit(1)
   })
@@ -43,3 +45,4 @@ const port = process.env.PORT || 8000
 app.listen(port, () => {
   console.log(`App running on port ${port}`)
 })
+//DATABASE=mongodb+srv://laerpeek:<password>@cluster0.j2kd4pb.mongodb.net/natours?retryWrites=true&w=majority
