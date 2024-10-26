@@ -4,7 +4,7 @@
 [Jonas Schmedtmann](https://github.com/jonasschmedtmann)
 
 ## 课程视频地址
-[Node.js、Express、MongoDB 等：2023 年完整训练营](https://www.udemy.com/course/nodejs-express-mongodb-bootcamp)
+[Node.js、Express、MongoDB 等：2024 年完整训练营](https://www.udemy.com/course/nodejs-express-mongodb-bootcamp)
 
 ## 已完成部分
 1. Restful API及过滤，排序，别名，分页功能的实现 √
