@@ -1,5 +1,8 @@
+const path = require('path')
+const fs = require('fs')
 const dotenv = require('dotenv')
 const mongoose = require('mongoose')
+const https = require('https')
 
 process.on('unhandleRejection', err => {
   console.log('UNHANLDER REJECTION! Shuttting down...')
@@ -14,15 +17,12 @@ process.on('uncaughtException', err => {
 })
 
 dotenv.config({
-  path: './config.env'
+  path: path.join(__dirname, 'config.env')
 })
 
 const app = require('./app')
 
-const DB = process.env.DATABASE.replace(
-  '<password>',
-  process.env.DATABASE_PASSWORD
-)
+const DB = process.env.DATABASE_LOCAL
 
 mongoose
   .connect(DB, {
@@ -34,15 +34,27 @@ mongoose
   .then(() => console.log('DB connection successful!'))
   .catch(err => {
     console.log('DB connect failed...')
-    console.log(DB)
-    console.log(err)
     console.log(err.name, err.message)
     process.exit(1)
   })
 
 // start server
+const privateKey = fs.readFileSync(
+  path.join(__dirname, 'ssl/9095694_www.laerpeek.top.key')
+)
+const privateCert = fs.readFileSync(
+  path.join(__dirname, 'ssl/9095694_www.laerpeek.top.pem')
+)
+const httpsOptions = {
+  key: privateKey,
+  cert: privateCert
+}
+
 const port = process.env.PORT || 8000
-app.listen(port, () => {
-  console.log(`App running on port ${port}`)
+const httpsServer = https.createServer(httpsOptions, app)
+httpsServer.listen(port, () => {
+  console.log('Server running on port ', port)
 })
-//DATABASE=mongodb+srv://laerpeek:<password>@cluster0.j2kd4pb.mongodb.net/natours?retryWrites=true&w=majority
+// app.listen(port, () => {
+//   console.log(`App running on port ${port}`)
+// })

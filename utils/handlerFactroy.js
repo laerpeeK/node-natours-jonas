@@ -3,7 +3,6 @@ const AppError = require('./appError')
 const APIFeatures = require('./apiFeatures')
 
 // 基础的CRUD controller模板
-
 exports.deleteOne = Model =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndDelete(req.params.id)

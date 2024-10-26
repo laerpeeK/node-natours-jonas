@@ -7,7 +7,6 @@ const mongoSanitize = require('express-mongo-sanitize')
 const xss = require('xss-clean')
 const hpp = require('hpp')
 const cookieParser = require('cookie-parser')
-const compression = require('compression')
 
 const AppError = require('./utils/appError')
 
@@ -37,7 +36,7 @@ app.use(helmet())
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
-
+app.use(morgan('common'))
 // 限制同IP下API请求次数，每小时最多100次，超过提示信息
 const limiter = rateLimit({
   max: 100,
@@ -82,9 +81,6 @@ app.use(
     ]
   })
 )
-
-// 压缩，only for text
-app.use(compression())
 
 // 获取请求发生时刻
 app.use((req, res, next) => {

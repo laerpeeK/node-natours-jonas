@@ -8,7 +8,7 @@ export const bookTour = async tourId => {
     // 1) Get checkout session from API
     const session = await axios({
       method: 'GET',
-      url: `/api/v1/bookings/checkout-session/${tourId}`
+      url: `https://laerpeek.top:5000/api/v1/bookings/checkout-session/${tourId}`
     }) 
 
     // 2) Create checkout form + charge credit card

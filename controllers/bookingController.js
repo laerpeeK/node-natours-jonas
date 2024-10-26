@@ -27,7 +27,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
           product_data: {
             name: `${tour.name} Tour`,
             description: tour.summary,
-            images: [`http://8.134.177.78:5000/img/tours/${tour.imageCover}`]
+            images: [`https://laerpeek.top:5000/img/tours/${tour.imageCover}`]
           }
         },
         quantity: 1

@@ -23,9 +23,10 @@ const createSendToken = (user, statusCode, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000 // 90d
     ),
     // secure: false, // 设置为true时，仅在https时有效
-    httpOnly: true // 不允许浏览器修改cookie
+    httpOnly: true, // 不允许浏览器修改cookie,
+    secure: true
   }
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true
+  // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true
   res.cookie('jwt', token, cookieOptions)
 
   // Remove password from output
@@ -83,7 +84,8 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.logout = (req, res) => {
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 100),
-    httpOnly: true
+    httpOnly: true,
+    secure: true
   })
   res.status(200).json({
     status: 'success'
